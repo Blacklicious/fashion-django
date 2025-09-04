@@ -1,2 +1,6 @@
 __pycache__/
 *.sqlite3
+
+# Ignore uploaded/media files
+media/
+img/
