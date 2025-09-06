@@ -156,7 +156,27 @@ SIMPLE_JWT = {
 INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 CORS_ALLOW_ALL_ORIGINS = True  # For development only!
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://172.20.10.2:3000",
+    "http://172.20.10.4:3000",
+    "http://192.168.1.15:3000",
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://172.20.10.2:3000",
+    "http://172.20.10.4:3000",
+    "http://192.168.1.15:3000",
+]
 
+# Static files settings
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static_root'
+
+# Media files settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
