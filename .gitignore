@@ -6,4 +6,5 @@ media/
 img/
 staticfiles/
 media/
-.env
+# env files (can opt-in for committing if needed)
+.env*
