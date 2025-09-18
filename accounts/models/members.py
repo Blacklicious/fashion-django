@@ -8,6 +8,7 @@ class MemberProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=512, blank=True, null=True)
     avatar = models.ImageField(upload_to="profiles/avatars/", blank=True, null=True)
+    role = models.CharField(max_length=100, blank=True, null=True)
     social_media = models.JSONField(blank=True, null=True)  # Store social media links as JSON
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='member_profiles_created', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

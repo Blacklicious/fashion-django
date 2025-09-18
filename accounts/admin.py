@@ -5,9 +5,9 @@ from .models.boutiques import BoutiqueProfile, BoutiqueCustomer
 
 @admin.register(MemberProfile)
 class MemberProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone', 'address', 'created_at', 'updated_at')
-    search_fields = ('user__username', 'phone', 'address')
-    list_filter = ('created_at', 'updated_at')
+    list_display = ('user', 'phone', 'address', 'role', 'created_at', 'updated_at')
+    search_fields = ('user__username', 'phone', 'address', 'role')
+    list_filter = ('created_at', 'updated_at', 'role')
 
 
 @admin.register(MemberBodyProfile)

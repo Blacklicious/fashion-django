@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from ..models.members import MemberProfile, MemberBodyProfile
 from ..serializers import MemberProfileSerializer, MemberBodyProfileSerializer
+from ..models.boutiques import BoutiqueProfile, BoutiqueCustomer
 
 class MemberView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -56,26 +57,40 @@ class MemberView(APIView):
 
     def put(self, request):
         print("PUT data:", request.data)
+        boutique_name = request.data.get("boutique")
         try:
             member = request.user.profile
 
-            # Only update member fields that are present and valid
+            # Collect only relevant fields
             member_fields = ['bio', 'phone', 'address', 'avatar', 'social_media']
             member_update_data = {field: request.data.get(field) for field in member_fields if field in request.data}
+
+            # ✅ If avatar is in FILES, use that instead of text
+            if "avatar" in request.FILES:
+                member_update_data["avatar"] = request.FILES["avatar"]
+
             print("Member update data:", member_update_data)
 
-            member_serializer = MemberProfileSerializer(member, data=member_update_data, partial=True)
+            member_serializer = MemberProfileSerializer(
+                member,
+                data=member_update_data,
+                partial=True
+            )
 
             body_profile_data = request.data.get("body_profile")
             print("Body profile data for update:", body_profile_data)
 
             if member_serializer.is_valid():
                 member_serializer.save()
+
                 body_profile, created = MemberBodyProfile.objects.get_or_create(member=member)
                 print("Body profile instance:", body_profile, "Created:", created)
+
                 if body_profile_data:
-                    # Only update body profile fields, not nested member
-                    clean_body_profile_data = {k: v for k, v in body_profile_data.items() if k != "member"}
+                    # Clean nested data
+                    clean_body_profile_data = {
+                        k: v for k, v in body_profile_data.items() if k != "member"
+                    }
                     body_profile_serializer = MemberBodyProfileSerializer(
                         body_profile, data=clean_body_profile_data, partial=True
                     )
@@ -87,6 +102,25 @@ class MemberView(APIView):
                         return Response(body_profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
                 print("Member updated:", member_serializer.data)
+                # check if member is customer of the boutique
+                if not BoutiqueCustomer.objects.filter(user=member.user).exists():
+                    print("User is not a boutique customer, creating one.")
+                    # For simplicity, assign to the first boutique
+                    boutique_instance = BoutiqueProfile.objects.filter(name=boutique_name).first()
+                    if boutique_instance:
+                        BoutiqueCustomer.objects.create(
+                            user=member.user,
+                            boutique=boutique_instance
+                        )
+                        print("Boutique customer created for user:", member.user)
+                    else:
+                        print("No boutiques available to assign.")
+                        print("Boutique customer created for user:", member.user)
+                        BoutiqueCustomer.objects.create(
+                            user=member.user,
+                            boutique=None
+                        )
+                        
                 return Response({
                     "message": "Member updated successfully",
                     "member": member_serializer.data,
@@ -95,6 +129,7 @@ class MemberView(APIView):
 
             print("Member serializer errors:", member_serializer.errors)
             return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         except MemberProfile.DoesNotExist:
             print("Member profile not found for user:", request.user)
             return Response({"error": "Member profile not found."}, status=status.HTTP_404_NOT_FOUND)

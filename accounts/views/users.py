@@ -36,8 +36,18 @@ class UserView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
+        # check if user role exists in member profile
         serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        # Add role information if available
+        try:
+            member_profile = MemberProfile.objects.get(user=request.user)
+            role = member_profile.role
+        except MemberProfile.DoesNotExist:
+            role = None # or some default value
+        data = serializer.data
+        data['role'] = role
+        # print("User data with role:", data)  # Debugging line
+        return Response(data)
 
     def put(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)

@@ -8,5 +8,4 @@ urlpatterns = [
     path('members/api/', MemberView.as_view(), name='members'),
     path('boutiques/api/', BoutiqueListView.as_view(), name='boutique-list'),
     path('boutiques/<int:boutique_id>/members/api/', BoutiqueMembersView.as_view(), name='boutique-members'),
-    #path('register/boutiques/api/', RegisterBoutiqueView.as_view(), name='register-boutiques'),
 ]
